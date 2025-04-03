@@ -1,8 +1,8 @@
 ---
 name: DatabaseAPI
 author: SubUrbanCradles
-version: 1.0.0
+version: 1.0.1
 main: SubUrbanCradles\DatabaseAPI
-api: 3.0.0
-description: Manage - create your plugin database.
+api: 5.0.0
+description: Manage - create your plugin database. (convertor = xDqZtop)
 ...

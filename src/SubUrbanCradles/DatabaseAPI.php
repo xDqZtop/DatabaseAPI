@@ -4,46 +4,49 @@ declare(strict_types=1);
 
 namespace SubUrbanCradles;
 
+use JsonException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as E;
 
 class DatabaseAPI extends PluginBase
 {
-
-    private static $this;
+    private static ?self $instance = null;
 
     /**
-     * @param $path
-     * @param $name
-     * @param $data
+     * @param string $path
+     * @param string $name
+     * @param string $data
+     * @return mixed
      */
-    public static function getData($path, $name, $data)
+    public static function getData(string $path, string $name, string $data): mixed
     {
-        self::Database($path, $name)->get($data);
+        return self::Database($path, $name)->get($data);
     }
 
     /**
-     * @param $path
-     * @param $name
+     * @param string $path
+     * @param string $name
      * @return Config
      */
-    public static function Database($path, $name)
+    public static function Database(string $path, string $name): Config
     {
-        return new Config ($path . $name . '.yml');
+        return new Config($path . $name . '.yml', Config::YAML);
     }
 
     /**
-     * @param $path
-     * @param $name
-     * @param $data
-     * @param $value
-     * @param $save
+     * @param string $path
+     * @param string $name
+     * @param string $data
+     * @param mixed $value
+     * @param bool $save
+     * @throws JsonException
      */
-    public static function addData($path, $name, $data, $value, $save)
+    public static function addData(string $path, string $name, string $data, mixed $value, bool $save): void
     {
         $Database = self::Database($path, $name);
-        if (is_array($Total = $Database->get($data))) {
+        $Total = $Database->get($data);
+        if (is_array($Total)) {
             $Total[] = $value;
             self::setData($path, $name, $data, $Total, $save);
         } else {
@@ -52,42 +55,42 @@ class DatabaseAPI extends PluginBase
     }
 
     /**
-     * @param $path
-     * @param $name
-     * @param $data
-     * @param $value
-     * @param $save
+     * @param string $path
+     * @param string $name
+     * @param string $data
+     * @param mixed $value
+     * @param bool $save
+     * @throws JsonException
      */
-    public static function setData($path, $name, $data, $value, $save)
+    public static function setData(string $path, string $name, string $data, mixed $value, bool $save): void
     {
         $Database = self::Database($path, $name);
         $Database->set($data, $value);
-        if ($save == true) {
+        if ($save) {
             $Database->save();
         }
     }
 
-    /**
-     * @return mixed
-     */
-    public static function getInstance()
+    public static function getInstance(): self
     {
-        return self::$this;
+        return self::$instance;
     }
 
     /**
-     * @param $path
-     * @param $name
-     * @param $data
-     * @param $value
-     * @param $save
+     * @param string $path
+     * @param string $name
+     * @param string $data
+     * @param mixed $value
+     * @param bool $save
+     * @throws JsonException
      */
-    public static function removeData($path, $name, $data, $value, $save)
+    public static function removeData(string $path, string $name, string $data, mixed $value, bool $save): void
     {
         $Database = self::Database($path, $name);
-        if (is_array($Total = $Database->get($data))) {
-            if (in_array($value, $Total)) {
-                unset($Total[array_search($value, $Total)]);
+        $Total = $Database->get($data);
+        if (is_array($Total)) {
+            if (in_array($value, $Total, true)) {
+                unset($Total[array_search($value, $Total, true)]);
                 $Total = array_values($Total);
                 self::setData($path, $name, $data, $Total, $save);
             } else {
@@ -98,8 +101,8 @@ class DatabaseAPI extends PluginBase
         }
     }
 
-    public function onEnable()
+    protected function onEnable(): void
     {
-        self::$this = $this;
+        self::$instance = $this;
     }
 }
